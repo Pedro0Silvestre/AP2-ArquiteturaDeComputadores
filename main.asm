@@ -11,22 +11,66 @@
 ;DEFININDO AS PORTAS
 clr input         ; R20 como 0 para configurar os pinos como entrada
 out DDRC, r20    ; Configura todos os pinos de PORTC como entrada
+ldi r27,0x03
+ldi r26,0x00
 
 ;LENDO TABELA INPUT
 tabelaInputInicio:
-ldi r27,0x03
-ldi r26,0x00
-ldi flag,0Xff
+;DEFININDO AS PORTAS
+clr input         ; R20 como 0 para configurar os pinos como entrada
+out DDRC, r20    ; Configura todos os pinos de PORTC como entrada
 
 tabelaInput:
+leitura:
 in input,PINC ; Le os valores de pinc e armazena em r20
+
+verficarFimCadeia:
+cpi input,0X1B ;verifica se é ESC
+breq fimleitura ; Sai da leitura se for esc
+
+verifcarCaractereValido: ; verifica sw o input corresponde a um carctere imprimivel em ascii
+cpi input,0X20 ; compara o valor do input com o começo da tabela 
+brlo tabelaInputInicio ;retorna a entrada até o caractere ser válido
+cpi input,0X7F ;compara a entrada com o final da tabela 
+brsh tabelaInputInicio ;se for maior ou igual retorna ao inicio
+rjmp verificaArmazenamento
+
+verificaArmazenamento:;Verifica se o limiite do armazenamento chegou
+cpi r26,0XFF
+brne armazenainput
+
+armazenainput:
 st X,input
-cpi input,0X1B
-brne tabelaDigito
 inc r26
-clr input
-cp r26,flag
-brne tabelaInput
+rjmp leitura
+
+fimleitura:
+ldi input,0X20
+st X,input
+inc r26
+rjmp tabelaInputInicio
+
+;TAREFA3:determinar o número de caracteres presentes na tabela de sequência de caracteres. 
+
+;1- percorrer a tabela
+inicioContaCaracteres:
+ldi r27,0x03; endereço inicial da tabela
+ldi r26,0x00
+clr contador;limpar contador
+
+;2- caso haja um caractere no endereço diferente de epaço somar num contador
+;3- caso seja um espaço o passa para o poximo endereço
+;4 - armazenar o resultado em memoria
+;5- imprimir numa porta de saida
+
+
+
+
+break
+ 
+
+
+
 
 
 

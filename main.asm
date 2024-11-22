@@ -1,11 +1,33 @@
-;Armazenar uma tabela de caracteres alfanumÈricos (mai˙sculas, min˙sculas e dÌgitos) na memÛria IRAM do Atmega2560, no padr„o ASCII, a partir do endereÁo 0x200. 
-;Armazenar tambÈm o cÛdigo ASCII do espaÁo em branco (0x20). Armazenar tambÈm o cÛdigo correspondente ao comando <ESC> (0x1B).
+;Armazenar uma tabela de caracteres alfanum√©ricos (mai√∫sculas, min√∫sculas e d√≠gitos) na mem√≥ria IRAM do Atmega2560, no padr√£o ASCII, a partir do endere√ßo 0x200. 
+;Armazenar tamb√©m o c√≥digo ASCII do espa√ßo em branco (0x20). Armazenar tamb√©m o c√≥digo correspondente ao comando <ESC> (0x1B).
 
-;DEFININDO VARI¡VEIS
+;DEFININDO VARI√ÅVEIS
 .DEF caractere = r16
 .DEF flag = r17 ;ponto de parada
 .DEF contador = r18
 .DEF termo = r19
+.DEF input = r20
+
+;DEFININDO AS PORTAS
+clr input         ; R20 como 0 para configurar os pinos como entrada
+out DDRC, r20    ; Configura todos os pinos de PORTC como entrada
+
+;LENDO TABELA INPUT
+tabelaInputInicio:
+ldi r27,0x03
+ldi r26,0x00
+ldi flag,0Xff
+
+tabelaInput:
+in input,PINC ; Le os valores de pinc e armazena em r20
+st X,input
+cpi input,0X1B
+brne tabelaDigito
+inc r26
+clr input
+cp r26,flag
+brne tabelaInput
+
 
 
 ;CRIANDO TABELA DOS DIGITOS
@@ -15,7 +37,7 @@ inicio:
 ldi  caractere,0x30;inicando com o valor 0x30 correspondente ao digito 0
 ldi termo,0x1
 ldi flag,0xA
-ldi r27,0x02 ; apontadores do endereÁo incialmente 0x200
+ldi r27,0x02 ; apontadores do endere√ßo incialmente 0x200
 ldi r26,0x00
 
 tabelaDigito:
@@ -53,7 +75,7 @@ inc r26
 cp flag,contador
 brne tabelaMinusculo
 
-;ARMAZENANDO O ESPA«O EM BRANCO E O ESC
+;ARMAZENANDO O ESPA√áO EM BRANCO E O ESC
 ldi caractere,0X20
 st X,caractere
 inc r26

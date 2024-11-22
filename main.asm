@@ -7,6 +7,7 @@
 .DEF contador = r18
 .DEF termo = r19
 .DEF input = r20
+.DEF somaCaractere = r21
 
 ;DEFININDO AS PORTAS
 clr input         ; R20 como 0 para configurar os pinos como entrada
@@ -32,7 +33,7 @@ verifcarCaractereValido: ; verifica sw o input corresponde a um carctere imprimi
 cpi input,0X20 ; compara o valor do input com o começo da tabela 
 brlo tabelaInputInicio ;retorna a entrada até o caractere ser válido
 cpi input,0X7F ;compara a entrada com o final da tabela 
-brsh tabelaInputInicio ;se for maior ou igual retorna ao inicio
+brsh inicioContaCaracteres;tabelaInputInicio ;se for maior ou igual retorna ao inicio
 rjmp verificaArmazenamento
 
 verificaArmazenamento:;Verifica se o limiite do armazenamento chegou
@@ -45,8 +46,8 @@ inc r26
 rjmp leitura
 
 fimleitura:
-ldi input,0X20
-st X,input
+ldi input,0X20 ; tribui o espaço em branco
+st X,input ; armazena o espaço em branco 
 inc r26
 rjmp tabelaInputInicio
 
@@ -56,12 +57,28 @@ rjmp tabelaInputInicio
 inicioContaCaracteres:
 ldi r27,0x03; endereço inicial da tabela
 ldi r26,0x00
+ldi somaCaractere,0xFF; R21 como FF para configurar os pinos como saída
+out DDRD, somaCaractere; Configura todos os pinos de PORTD como saída
 clr contador;limpar contador
+clr caractere;limpar r16
+clr somaCaractere;limpar somaCaractere
 
-;2- caso haja um caractere no endereço diferente de epaço somar num contador
-;3- caso seja um espaço o passa para o poximo endereço
-;4 - armazenar o resultado em memoria
-;5- imprimir numa porta de saida
+contaCaracteres:
+ld caractere,X; 1 - armazenar valor do caracter na tabela num registrador
+cpi caractere,0X20;2- cericar se caractere é um espaço em branco
+breq espacoEmBranco; ignora o espaço
+cpi caractere,0X00;Verifica se o espaço está vazio caso esteja significa q a tabela já foi preenchida 
+breq imprimirCaractere ;caso chegue no fim da tabele direciona até a impressão
+inc somaCaractere ;se for um caractere valido acrescenta um no contador de soma
+sts 0X401,somaCaractere;armazena valor da soma no endereço
+
+
+espacoEmBranco:;3-caso caractere seja igual ao espaço em branco,verifique o proximo
+inc r26
+rjmp contaCaracteres
+
+imprimirCaractere:;5- imprimir numa porta de saida
+out PORTD,somaCaractere
 
 
 
@@ -74,7 +91,7 @@ break
 
 
 
-;CRIANDO TABELA DOS DIGITOS
+; TAREFA 1 CRIANDO TABELA DOS DIGITOS
 
 ;carregand os valores nos registradores
 inicio:

@@ -8,7 +8,9 @@
 .DEF termo = r19
 .DEF input = r20
 .DEF somaCaractere = r21
+.DEF comparador = r22
 
+;TAREFA 2
 ;DEFININDO AS PORTAS
 clr input         ; R20 como 0 para configurar os pinos como entrada
 out DDRC, r20    ; Configura todos os pinos de PORTC como entrada
@@ -33,7 +35,7 @@ verifcarCaractereValido: ; verifica sw o input corresponde a um carctere imprimi
 cpi input,0X20 ; compara o valor do input com o começo da tabela 
 brlo tabelaInputInicio ;retorna a entrada até o caractere ser válido
 cpi input,0X7F ;compara a entrada com o final da tabela 
-brsh inicioContaCaracteres;tabelaInputInicio ;se for maior ou igual retorna ao inicio
+brsh aparicaoCaractereInicio;tabelaInputInicio ;se for maior ou igual retorna ao inicio
 rjmp verificaArmazenamento
 
 verificaArmazenamento:;Verifica se o limiite do armazenamento chegou
@@ -81,16 +83,56 @@ imprimirCaractere:;5- imprimir numa porta de saida
 out PORTD,somaCaractere
 
 
+; TAREFA 4: ler um novo byte correspondente a um caractere em uma porta de entrada e contar o número de vezes que o caractere está presente na tabela de sequência de caracteres
+; Armazenar o resultado no endereço de memória 0x402. Verificar se o caractere de entrada é válido. Caso o caractere disponibilizado na entrada não seja válido, 
+;ler um novo caractere em loop até a entrada apresentar um caractere válido.
+
+aparicaoCaractereInicio:
+clr contador ; limpa contador      
+ldi input,0xFF; R21 como FF para configurar os pinos como saída
+out DDRD, input; Configura todos os pinos de PORTD como saída
+ldi r27,0X03;definindo os endereços da tabela
+ldi r26,0X00
+
+aparicaoCaractere:
+;1- LER BYTE DE ENTRADA
+clr input
+out DDRC, input ;define pinc como entrada
+in input,PINC ;armazena input em r20
+;2- VERIFICAR SE É VALIDO
+validacaoEntrada:
+cpi input,0X20
+brlo caractereInvalido ;retorna a entrada até o caractere ser válido
+cpi input,0X7F ;compara a entrada com o final da tabela 
+brsh caractereInvalido;tabelaInputInicio ;se for maior ou igual retorna ao inicio
+;3 - (SE VALIDO) CONTAR NUMERO DE VEZES Q APAREE NA TABELA
+comparacao:
+ld comparador,X ;3.1 - armazenar o valor da tabela caractere num registrador
+cpi comparador,0X00 ;Verifica se chegou ao fim da tabela
+breq imprimiComparacao
+cp comparador,input ;3.2 compara com o valor de input
+breq aparicao;3.3- Se o comparador for igual direciona a aparicao
+inc r26;3-4 Se não for igual continua a verificar até chegar no fim da tabela
+rjmp comparacao
+
+aparicao:;3.4 - incrementa variavel de aparicoes
+inc contador
+inc r26
+rjmp comparacao
+;4- ARMAZENAR RESULTADO NA MEMÓRIA(0X402)
+armazenaComparacao:
+sts 0X402,contador
+;5 - LIBERA NA PORTA DE SAIDA
+imprimiComparacao:
+out PORTD,contador
+clr r26; reinicia o percorrer da tabela
+
+;(SE NÃO) LER NOVAMENTE(PASSO 1)
+caractereInvalido:
+rjmp aparicaoCaractere
 
 
-break
  
-
-
-
-
-
-
 ; TAREFA 1 CRIANDO TABELA DOS DIGITOS
 
 ;carregand os valores nos registradores

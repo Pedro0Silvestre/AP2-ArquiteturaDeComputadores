@@ -1,4 +1,5 @@
 ;202402841904 Pedro Henrique Silvestre de Mello Moreira TA
+;202307476331 Sarah Ferrari TA
 
 ;Armazenar uma tabela de caracteres alfanuméricos (maiúsculas, minúsculas e dígitos) na memória IRAM do Atmega2560, no padrão ASCII, a partir do endereço 0x200. 
 ;Armazenar também o código ASCII do espaço em branco (0x20). Armazenar também o código correspondente ao comando <ESC> (0x1B).
